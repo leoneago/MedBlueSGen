@@ -1,0 +1,470 @@
+---
+title: "MedBluesGen_Rmarkdown"
+author: "Agostino Leone"
+date: "22/1/2022"
+output: 
+  html_document:
+    code_folding: "show"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)  # comment
+```
+
+### scripts for post dDocent pipeline analysis of the MedBlueSGen project: a population genetic study on Mediterranean/North East Atlantic  blue shark, _Prionace glauca_, for stock identification and conservation <https://fishreg.jrc.ec.europa.eu/web/medbluesgen>
+
+__If using this Rmarkdown as a source of scripts/inspiration, please consider to cite the original paper:__
+
+> ### Metapopulations in high sea: the population genomics of the blue shark, Prionace glauca, between Mediterranean Sea and North East Atlantic Ocean. **In prep**. 
+
+
+### Sampling Design
+# First of all, let's clean the workspace:
+```{r clean workspace}
+rm(list = ls())
+```
+
+Then let's create a plot with the sampling design and specimens location:
+
+```{r map}
+library(rworldmap)
+library(ggmap)
+library(maps)
+library(sp)
+library(mapplots)
+library(maptools)
+library(rgdal)
+library(RgoogleMaps)
+library(ggOceanMaps)
+library(RgoogleMaps)
+library(dplyr)
+
+#load the csv with all samples organized in a file called blu.csv
+
+dataset <-read.csv(file = "blu.csv", sep = ",")
+NATL <- dataset %>% filter(
+  area %in% c("NATL" )
+)
+
+EATL <- dataset %>% filter(
+  area %in% c("EATL" )
+)
+
+
+WMED <- dataset %>% filter(
+  area %in% c("WMED" )
+)
+
+EMED <- dataset %>% filter(
+  area %in% c("EMED" )
+)
+
+#Then attach the datasets
+attach(NATL)
+attach(EATL)
+attach(WMED)
+attach(EMED)
+
+dt <- data.frame(lon = c(-20, -20, 30, 30), lat = c(30, 52, 30, 52))
+
+basemap(data = dt, bathymetry = TRUE) + annotation_scale(location = "br") + 
+  annotation_north_arrow(location = "tr", which_north = "true") + 
+  geom_point(data = NATL, mapping = aes(x = lon, y = lat), color = "green") + 
+  geom_point(data = EATL, mapping = aes(x = lon, y = lat), color = "red") +
+  geom_point(data = WMED, mapping = aes(x = lon, y = lat), color = "purple") +
+  geom_point(data = EMED, mapping = aes(x = lon, y = lat), color = "blue")
+```
+
+### Population Genetics
+
+
+## Import genotype input file into genind object
+# first activate needed packages
+```{r load packages}
+library(adegenet)
+library(OutFLANK)
+library(qvalue)
+library(dartR)
+library(ggplot2)
+library(ggforce)
+library(hierfstat)
+library(pegas)
+library(poppr)
+library(diveRsity)
+library(SNPRelate)
+library(graph4lg)
+library(radiator)
+library(assigner)
+library(strataG)
+library(stockR)
+library(dartR)
+library(hierfstat)
+library(pcadapt)
+library(rnaturalearth)
+library(ggspatial)
+library(pegas)
+library(poppr)
+library(diveRsity)
+library(grDevices)
+library(MASS)
+library(wesanderson)
+library(plotly)
+library(directlabels)
+library(ggthemes)
+library(devtools)
+library(dartR)
+library(brew)
+library(RColorBrewer)
+library(scales)
+library(dplyr)
+```
+
+# Import dataset and cleaning (Most of the filtering has been done in the server following a modified tutorial by Dr. Jon Puritz )
+```{r import}
+neutrals <- import2genind("neutralloci.gen")
+```
+
+```{r data filtering}
+#Update the site labels so that the site code rather than the last individual label in the sample is used.
+# Use gsub to extract only letters from a vector
+
+popNames(neutrals) = gsub("[^a-zA-Z]", "", popNames(neutrals))
+popNames(neutrals)
+
+#filter per NA
+loci<-missingno(neutrals, type = "loci", cutoff = 0.10, quiet = FALSE,
+          freq = FALSE)
+
+neutrals<-missingno(loci, type = "geno", cutoff = 0.10, quiet = FALSE,
+             freq = FALSE)
+nLoc(neutrals) 
+
+
+#Calculate the percentage of complete genotypes per individuals.
+
+locmiss_blues = propTyped(neutrals, by = "ind")
+locmiss_blues[which(locmiss_blues < 0.80)] # print loci with < 80% complete genotypes
+
+# Barplot
+barplot(locmiss_blues, ylim = c(0,1), ylab = "Complete genotypes (proportion)", xlab = "Specimen", las = 2, cex.names = 0.7)
+```
+
+# Check genotypes are unique
+Check all individual genotypes are unique
+
+```{r check polu}
+#print multilocus genotype
+mlg(neutrals)
+#check if loci are polymorphic
+isPoly(neutrals) %>% summary
+```
+Just in case:
+
+duplicate_blues = mlg.id(neutrals)
+for (i in duplicate_blues){ # for each element in the list object
+  if (length(duplicate_blues[i]) > 1){ # if the length is greater than 1
+    print(i) # print individuals that are duplicates
+  }
+}
+
+Just in case:
+Remove loci that are not polymorphic
+
+poly_loci = names(which(isPoly(neutrals) == TRUE))
+neutrals = neutrals[loc = poly_loci]
+isPoly(neutrals) %>% summary
+
+
+
+# Genetic Diversity and Differentiation
+```{r genetic differentiation}
+neuro <- gi2gl(neutrals, parallel = FALSE, verbose = NULL)
+class(neuro)
+FstWC84 <-  gl.fst.pop(neuro, nboots = 10000, percent = 95)
+FstWC84$Fsts
+FstWC84$Pvalues
+
+result <- diveRsity::basicStats(
+  infile = "neutralloci.gen",
+  outfile = "BasicStat_neutro", fis_ci = TRUE, ar_ci = TRUE,
+  fis_boots = 1000, ar_boots = 1000, mc_reps = 1000, rarefaction = FALSE,
+  ar_alpha = 0.05, fis_alpha = 0.05)
+
+gendiv.neutral <- data.frame(
+  "NATL" = result$main_tab$NATL$overall,
+  "EATL" = result$main_tab$EATL$overall,
+  "WMED" = result$main_tab$WMED$overall,
+  "EMED" = result$main_tab$EMED$overall
+)
+
+gendiv.neutral
+
+write.table(gendiv.neutral, "gendiv.neutral.txt", sep="\t")
+```
+
+
+##PCA
+# Perform a PCA (principle components analysis) on the blueshark dataset.
+
+Replace missing data with the mean allele frequencies and perform the PCA with dudi.pca
+```{r PCA}
+x = tab(neutrals, NA.method = "mean")
+pca1 = dudi.pca(x, scannf = FALSE, scale = FALSE, nf = 4)
+```
+# How much genetic variance is explained by each axis in percentage?
+```{r eig}
+percent = pca1$eig/sum(pca1$eig)*100
+barplot(percent, ylab = "% variance explained by eigenvectors", names.arg = round(percent, 1))
+```
+#Create the plot
+```{r PCA plot}
+# Create a data.frame containing individual coordinates
+ind_coords = as.data.frame(pca1$li)
+# Rename columns of dataframe and add column with individuals
+colnames(ind_coords) = c("PC1","PC2","PC3")
+ind_coords$Ind = indNames(neutrals)
+
+# Add a column with the site IDs
+ind_coords$Site = neutrals$pop
+
+# Calculate centroid (average) position for each population
+centroid = aggregate(cbind(PC1, PC2, PC3) ~ Site, data = ind_coords, FUN = mean)
+
+# Add centroid coordinates to ind_coords dataframe
+ind_coords = left_join(ind_coords, centroid, by = "Site", suffix = c("",".cen"))
+
+# Define colour palette
+cols = brewer.pal(nPop(neutrals), "Set1")
+
+# Custom x and y labels
+xlab = paste("PC1 (", format(round(percent[1], 1), nsmall=1)," %)", sep="")
+ylab = paste("PC2 (", format(round(percent[2], 1), nsmall=1)," %)", sep="")
+
+# Custom theme for ggplot2
+ggtheme = theme(axis.text.y = element_text(colour="black", size=12),
+                axis.text.x = element_text(colour="black", size=12),
+                axis.title = element_text(colour="black", size=12),
+                panel.border = element_rect(colour="black", fill=NA, size=1),
+                panel.background = element_blank(),
+                plot.title = element_text(hjust=0.5, size=15) 
+)
+
+# Scatter plot axis 1 vs. 2
+ggplot(data = ind_coords, aes(x = PC1, y = PC2))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  # spider segments
+  geom_segment(aes(xend = PC1.cen, yend = PC2.cen, colour = Site), show.legend = FALSE)+
+  # points
+  geom_point(aes(fill = Site), shape = 21, size = 3, show.legend = FALSE)+
+  # centroids
+  geom_label(data = centroid, aes(label = Site, fill = Site), size = 4, show.legend = FALSE)+
+  # colouring
+  scale_fill_manual(values = cols)+
+  scale_colour_manual(values = cols)+
+  # custom labels
+  labs(x = xlab, y = ylab)+
+  # custom theme
+  ggtheme
+# Export plot
+# ggsave("Figure1.png", width = 12, height = 8, dpi = 600)
+```
+ #Lets's try to remove the Eastern Mediterranean
+ 
+```{r check EMED}
+neutrals_noEMED <- neutrals[pop= c(1,3,4)]
+# check if the EMED population has been removed
+neutrals_noEMED$pop
+```
+
+#then redo the PCA with this subset
+```{r PCA no EMED}
+x = tab(neutrals_noEMED, NA.method = "mean")
+pca1 = dudi.pca(x, scannf = FALSE, scale = FALSE, nf = 3)
+```
+# How much genetic variance is explained by each axis in percentage?
+```{r PCA no EMED eigen}
+percent = pca1$eig/sum(pca1$eig)*100
+barplot(percent, ylab = "% variance explained by eigenvectors", names.arg = round(percent, 1))
+```
+#Create the plot
+```{r PCA no EMED plot}
+# Create a data.frame containing individual coordinates
+ind_coords = as.data.frame(pca1$li)
+# Rename columns of dataframe and add column with individuals
+colnames(ind_coords) = c("PC1","PC2","PC3")
+ind_coords$Ind = indNames(neutrals_noEMED)
+
+# Add a column with the site IDs
+ind_coords$Site = neutrals_noEMED$pop
+
+# Calculate centroid (average) position for each population
+centroid = aggregate(cbind(PC1, PC2, PC3) ~ Site, data = ind_coords, FUN = mean)
+
+# Add centroid coordinates to ind_coords dataframe
+ind_coords = left_join(ind_coords, centroid, by = "Site", suffix = c("",".cen"))
+
+# Define colour palette
+cols = brewer.pal(nPop(neutrals_noEMED), "Set1")
+
+# Custom x and y labels
+xlab = paste("PC1 (", format(round(percent[1], 1), nsmall=1)," %)", sep="")
+ylab = paste("PC2 (", format(round(percent[2], 1), nsmall=1)," %)", sep="")
+
+# Custom theme for ggplot2
+ggtheme = theme(axis.text.y = element_text(colour="black", size=12),
+                axis.text.x = element_text(colour="black", size=12),
+                axis.title = element_text(colour="black", size=12),
+                panel.border = element_rect(colour="black", fill=NA, size=1),
+                panel.background = element_blank(),
+                plot.title = element_text(hjust=0.5, size=15) 
+)
+
+# Scatter plot axis 1 vs. 2
+ggplot(data = ind_coords, aes(x = PC1, y = PC2))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  # spider segments
+  geom_segment(aes(xend = PC1.cen, yend = PC2.cen, colour = Site), show.legend = FALSE)+
+  # points
+  geom_point(aes(fill = Site), shape = 21, size = 3, show.legend = FALSE)+
+  # centroids
+  geom_label(data = centroid, aes(label = Site, fill = Site), size = 4, show.legend = FALSE)+
+  # colouring
+  scale_fill_manual(values = cols)+
+  scale_colour_manual(values = cols)+
+  # custom labels
+  labs(x = xlab, y = ylab)+
+  # custom theme
+  ggtheme
+# Export plot
+# ggsave("Figure1.png", width = 12, height = 8, dpi = 600)
+```
+
+#DAPC
+#Perform a DAPC (discriminant analysis of principal components) on the blueshark dataset.
+Before that, let's copute the optimal number of PC to retain for the analysis
+```{r cross.validation for DAPC}
+# Perform cross validation to find the optimal number of PCs to retain in DAPC
+set.seed(123)
+x = tab(neutrals, NA.method = "mean")
+crossval = xvalDapc(x, neutrals$pop, result = "groupMean", xval.plot = TRUE)
+
+# Check the number of PCs with the best statistics
+crossval$`Root Mean Squared Error by Number of PCs of PCA`
+crossval$`Number of PCs Achieving Highest Mean Success`
+crossval$`Number of PCs Achieving Lowest MSE`
+numPCs = as.numeric(crossval$`Number of PCs Achieving Lowest MSE`)
+```
+# Run a DAPC using site IDs as priors
+```{r DAPC}
+dapc1 = dapc(neutrals, neutrals$pop, n.pca = numPCs, n.da = 3)
+
+# Analyse how much percent of genetic variance is explained by each axis
+percent = dapc1$eig/sum(dapc1$eig)*100
+barplot(percent, ylab = "Genetic variance explained by eigenvectors (%)", ylim = c(0,60),
+        names.arg = round(percent, 1))
+```
+
+#Plot DAPC results
+```{r plot DAPC}
+# Create a data.frame containing individual coordinates
+ind_coords = as.data.frame(dapc1$ind.coord)
+
+# Rename columns of dataframe
+colnames(ind_coords) = c("Axis1","Axis2","Axis3")
+
+# Add a column containing individuals
+ind_coords$Ind = indNames(neutrals)
+
+# Add a column with the site IDs
+ind_coords$Site = neutrals$pop
+
+# Calculate centroid (average) position for each population
+centroid = aggregate(cbind(Axis1, Axis2, Axis3) ~ Site, data = ind_coords, FUN = mean)
+
+# Add centroid coordinates to ind_coords dataframe
+ind_coords = left_join(ind_coords, centroid, by = "Site", suffix = c("",".cen"))
+
+# Define colour palette
+cols = brewer.pal(nPop(neutrals), "Set1")
+
+# Custom x and y labels
+xlab = paste("Axis 1 (", format(round(percent[1], 1), nsmall=1)," %)", sep="")
+ylab = paste("Axis 2 (", format(round(percent[2], 1), nsmall=1)," %)", sep="")
+
+# Scatter plot axis 1 vs. 2
+ggplot(data = ind_coords, aes(x = Axis1, y = Axis2))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  # spider segments
+  geom_segment(aes(xend = Axis1.cen, yend = Axis2.cen, colour = Site), show.legend = FALSE)+
+  # points
+  geom_point(aes(fill = Site), shape = 21, size = 3, show.legend = FALSE)+
+  # centroids
+  geom_label(data = centroid, aes(label = Site, fill = Site), size = 4, show.legend = FALSE)+
+  # colouring
+  scale_fill_manual(values = cols)+
+  scale_colour_manual(values = cols)+
+  # custom labels
+  labs(x = xlab, y = ylab)+
+  ggtitle("DAPC")+
+  # custom theme
+  ggtheme
+# Export plot
+# ggsave("Figure3.png", width = 12, height = 8, dpi = 600)
+```
+
+# Let's redo the DAPC searching for different number of clusters (K)
+```{r find.clusters}
+set.seed(124)
+grpneut <-
+adegenet::find.clusters(
+neutrals,
+max.n.clust = 6,
+n.pca = adegenet::nInd(neutrals) / 3,
+stat = "BIC",
+parallel = TRUE,
+n.cores = parallel::detectCores() - 2
+)
+
+PCneut <- as.numeric(numPCs)
+
+dapc.all.neutral.object.names <- c()
+for (K in 2:5) {
+    set.seed(124)
+    grp <- adegenet::find.clusters(neutrals, n.clust = K, n.pca = PCneut)
+    set.seed(124)
+    dapc.all.neutral <- adegenet::dapc(neutrals, grp$grp, n.da = K - 1,
+                                       n.pca = PCneut)
+    assign(paste0("dapc.all.neutral", K),value = dapc.all.neutral)
+    dapc.all.neutral.object.names <- c(dapc.all.neutral.object.names,
+                                       paste0("dapc.all.neutral", K))
+}
+```
+
+```{r DAPC 2-5 K}
+for(K in 2:5) {
+    dapc.neutral <- get(dapc.all.neutral.object.names[K - 1])
+    if (K == 2){
+        posi.leg <- "bottomright"
+    } else {posi.leg <- "bottomleft"}
+
+dapc.neutral.plot<-ade4::scatter(dapc.neutral, grp = pop(neutrals), cex = 2, legend = TRUE, col = cols, clabel = FALSE, posi.leg = posi.leg, scree.pca = TRUE, posi.pca = "topleft", cleg = 0.75, xax = 1, yax = 2)
+}
+```
+#Then we can calculate the relative migration rate with
+```{r mig rate}
+prova <- divMigrate(infile = "neutralloci.gen", outfile = "relmigrate", boots = 10000, stat = "all",  filter_threshold = 0, plot_network = TRUE,  plot_col = "darkblue", para = 2)
+```
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
