@@ -1,6 +1,6 @@
 # MedBlueSGen 
 ### A population genetic study on Mediterranean blue shark for stock identification and conservation
-This is the repository to all codes used for the [MedBlueSGen](https://fishreg.jrc.ec.europa.eu/web/medbluesgen) project (updates soon)
+This is the repository for all the codes used for the [MedBlueSGen](https://fishreg.jrc.ec.europa.eu/web/medbluesgen) project (updates soon)
 
 An interactive sampling map is available [here](https://fishreg.jrc.ec.europa.eu/web/medbluesgen/sampling-data)
 
