@@ -119,7 +119,7 @@ library(scales)
 library(dplyr)
 ```
 
-# Import dataset and cleaning (Most of the filtering has been done in the server following a modified tutorial by Dr. Jon Puritz )
+# Import dataset and cleaning (Most of the filtering has been done following a modified tutorial by Dr. Jon Puritz )
 ```{r import}
 neutrals <- import2genind("neutralloci.gen")
 ```
