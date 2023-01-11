@@ -1,3 +1,4 @@
+rm(list=ls())
 library(rworldmap)
 library(ggmap)
 library(maps)
