@@ -1,5 +1,5 @@
 
-# dDocent ddRAD tags assembly and filtering used in the paper by Leone et al., 2023??
+# dDocent ddRAD tags assembly and filtering used in the paper [TITLE] Leone et al., 2023??
 
 ## MedBluesGen paper title
 
