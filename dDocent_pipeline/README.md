@@ -1,5 +1,5 @@
 
-## commented steps of bioinformatics dDocent ddRAD tags assembly and filtering of data from Leone et al., 2023 "Population genomics of the blue shark, Prionace glauca, reveals different stock units and discrete populations in the Mediterranean Sea and the North East Atlantic" __Evolutionary Applications__ , In Review 
+## commented steps of bioinformatics dDocent ddRAD tags assembly and filtering of data from Leone et al., 2023 "Population genomics of the blue shark, Prionace glauca, reveals different stock units and discrete populations in the Mediterranean Sea and the North East Atlantic" *Evolutionary Applications* , In Review 
 
 ## MedBluesGen paper title
 
