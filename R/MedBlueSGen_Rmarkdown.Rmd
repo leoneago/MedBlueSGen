@@ -15,7 +15,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)  # comment
 
 __If using this Rmarkdown as a source of scripts/inspiration, please consider to cite the original paper:__
 
-> ### Metapopulations in high sea: the population genomics of the blue shark, Prionace glauca, between Mediterranean Sea and North East Atlantic Ocean. **In prep**. 
+> ### Population genomics of the blue shark, *Prionace glauca*, reveals different stock units and discrete populations in the Mediterranean Sea and the North East Atlantic **In Review**. 
 
 
 ### Sampling Design
