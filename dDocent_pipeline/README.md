@@ -7,7 +7,7 @@ Here is possible to find the bioinformatic steps for assembly and ddRAD loci fil
 
 #Filter initial Variant Calls
 
-•	Start with raw vcf file and change all genotypes with less than 5 reads to missing data
+1-	Start with raw vcf file and change all genotypes with less than 5 reads to missing data
 This inital calls can be found here
 The file needs to be unzipped before starting this workflow.
 
