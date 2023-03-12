@@ -12,20 +12,21 @@ The file needs to be unzipped before starting this workflow.
 ```sh
 vcftools --vcf TotalRawSNPs.vcf --recode-INFO-all --minDP 5 --out BSdp5 --recode
 ```
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf TotalRawSNPs.vcf
+>        --recode-INFO-all
+>        --minDP 5
+>        --out BSdp5
+>        --recode
+>
+> After filtering, kept 210 out of 210 Individuals
+> Outputting VCF file...
+> After filtering, kept 56004 out of a possible 56004 Sites
+> Run Time = 49.00 seconds
 
-Parameters as interpreted:
-        --vcf TotalRawSNPs.vcf
-        --recode-INFO-all
-        --minDP 5
-        --out BSdp5
-        --recode
-
-After filtering, kept 210 out of 210 Individuals
-Outputting VCF file...
-After filtering, kept 56004 out of a possible 56004 Sites
-Run Time = 49.00 seconds
 •	Now filter out all variants that are present below a minor allele frequency of 1% and are not called in at least 50% of samples
 vcftools --vcf BSdp5.recode.vcf --recode-INFO-all --maf 0.01 -–max-missing 0.5 --out BSdp5g5 –recode
 
