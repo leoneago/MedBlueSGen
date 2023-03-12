@@ -6,9 +6,11 @@
 Here is possible to find the bioinformatic steps for assembly and ddRAD loci filtering via [dDocent](http://www.ddocent.com/) used in the blue shark population genomics paper
 
 #Filter initial Variant Calls
+
 •	Start with raw vcf file and change all genotypes with less than 5 reads to missing data
 This inital calls can be found here
 The file needs to be unzipped before starting this workflow.
+
 ```sh
 vcftools --vcf TotalRawSNPs.vcf --recode-INFO-all --minDP 5 --out BSdp5 --recode
 ```
