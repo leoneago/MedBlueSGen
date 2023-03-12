@@ -14,7 +14,7 @@ vcftools --vcf TotalRawSNPs.vcf --recode-INFO-all --minDP 5 --out BSdp5 --recode
 ```
 > VCFtools - 0.1.14
 > (C) Adam Auton and Anthony Marcketta 2009
-
+>
 > Parameters as interpreted:
 >        --vcf TotalRawSNPs.vcf
 >        --recode-INFO-all
