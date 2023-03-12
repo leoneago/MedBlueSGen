@@ -47,101 +47,109 @@ vcftools --vcf BSdp5.recode.vcf --recode-INFO-all --maf 0.01 -–max-missing 0.5
 >Run Time = 26.00 seconds
 
 3. Now use a custom script called filter_missing_ind.sh to filter out bad individuals (there were a lot in this data set).
+```sh
 bash filter_missing_ind.sh BSdp5g5.recode.vcf BSdp5MI
-At the prompt, enter yes and a custom cutoff of 0.85
+```
+At the prompt, enter `yes` and a custom cutoff of `0.85`
+```sh
 yes
 0.58
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
+```
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5g5.recode.vcf
+>        --exclude lowDP.indv
+>        --recode-INFO-all
+>        --out BSdp5MI
+>        --recode
+>
+> Excluding individuals in 'exclude' list
+> After filtering, kept 210 out of 210 Individuals
+> Outputting VCF file...
+> After filtering, kept 27863 out of a possible 27863 Sites
+> Run Time = 23.00 seconds
 
-Parameters as interpreted:
-        --vcf BSdp5g5.recode.vcf
-        --exclude lowDP.indv
-        --recode-INFO-all
-        --out BSdp5MI
-        --recode
+3. Now use a second custom script pop_missing_filter.sh to filter loci that have high missing data values in a single population. You will need a file that maps individuals to populations popmap
 
-Excluding individuals in 'exclude' list
-After filtering, kept 210 out of 210 Individuals
-Outputting VCF file...
-After filtering, kept 27863 out of a possible 27863 Sites
-Run Time = 23.00 seconds
-•	Now use a second custom script pop_missing_filter.sh to filter loci that have high missing data values in a single population. You will need a file that maps individuals to populations popmap
+```sh
 ./pop_missing_filter.sh BSdp5MI.recode.vcf popmap 0.25 0 BSdp5MIp25
+```
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5MI.recode.vcf
+>        --keep keep.EATL
+>        --out EATL
+>        --missing-site
+>
+> Keeping individuals in 'keep' list
+> After filtering, kept 35 out of 210 Individuals
+> Outputting Site Missingness
+> After filtering, kept 27863 out of a possible 27863 Sites
+> Run Time = 1.00 seconds
+>
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5MI.recode.vcf
+>        --keep keep.EMED
+>        --out EMED
+>        --missing-site
+>
+> Keeping individuals in 'keep' list
+> After filtering, kept 57 out of 210 Individuals
+> Outputting Site Missingness
+> After filtering, kept 27863 out of a possible 27863 Sites
+> Run Time = 1.00 seconds
+>
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5MI.recode.vcf
+>        --keep keep.NATL
+>        --out NATL
+>        --missing-site
+>
+> Keeping individuals in 'keep' list
+> After filtering, kept 30 out of 210 Individuals
+> Outputting Site Missingness
+> After filtering, kept 27863 out of a possible 27863 Sites
+> Run Time = 1.00 seconds
+>
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5MI.recode.vcf
+>        --keep keep.WMED
+>        --out WMED
+>        --missing-site
+>
+> Keeping individuals in 'keep' list
+> After filtering, kept 88 out of 210 Individuals
+> Outputting Site Missingness
+> After filtering, kept 27863 out of a possible 27863 Sites
+> Run Time = 1.00 seconds
+>
+> VCFtools - 0.1.14
+> (C) Adam Auton and Anthony Marcketta 2009
+>
+> Parameters as interpreted:
+>        --vcf BSdp5MI.recode.vcf
+>        --exclude-positions loci.to.remove
+>        --recode-INFO-all
+>        --out BSdp5MIp25
+>        --recode
+>
+> After filtering, kept 210 out of 210 Individuals
+> Outputting VCF file...
+> After filtering, kept 23638 out of a possible 27863 Sites
 
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
-
-Parameters as interpreted:
-        --vcf BSdp5MI.recode.vcf
-        --keep keep.EATL
-        --out EATL
-        --missing-site
-
-Keeping individuals in 'keep' list
-After filtering, kept 35 out of 210 Individuals
-Outputting Site Missingness
-After filtering, kept 27863 out of a possible 27863 Sites
-Run Time = 1.00 seconds
-
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
-
-Parameters as interpreted:
-        --vcf BSdp5MI.recode.vcf
-        --keep keep.EMED
-        --out EMED
-        --missing-site
-
-Keeping individuals in 'keep' list
-After filtering, kept 57 out of 210 Individuals
-Outputting Site Missingness
-After filtering, kept 27863 out of a possible 27863 Sites
-Run Time = 1.00 seconds
-
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
-
-Parameters as interpreted:
-        --vcf BSdp5MI.recode.vcf
-        --keep keep.NATL
-        --out NATL
-        --missing-site
-
-Keeping individuals in 'keep' list
-After filtering, kept 30 out of 210 Individuals
-Outputting Site Missingness
-After filtering, kept 27863 out of a possible 27863 Sites
-Run Time = 1.00 seconds
-
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
-
-Parameters as interpreted:
-        --vcf BSdp5MI.recode.vcf
-        --keep keep.WMED
-        --out WMED
-        --missing-site
-
-Keeping individuals in 'keep' list
-After filtering, kept 88 out of 210 Individuals
-Outputting Site Missingness
-After filtering, kept 27863 out of a possible 27863 Sites
-Run Time = 1.00 seconds
-
-VCFtools - 0.1.14
-(C) Adam Auton and Anthony Marcketta 2009
-
-Parameters as interpreted:
-        --vcf BSdp5MI.recode.vcf
-        --exclude-positions loci.to.remove
-        --recode-INFO-all
-        --out BSdp5MIp25
-        --recode
-
-After filtering, kept 210 out of 210 Individuals
-Outputting VCF file...
-After filtering, kept 23638 out of a possible 27863 Sites
 •	Next, filter sites again my MAF, and filter out any sites with less than 90% overall call rate
 
 vcftools --vcf BSdp5MIp25.recode.vcf --recode-INFO-all --maf 0.01 --max-missing 0.9 --out BSdp5MIp25g9 --recode
