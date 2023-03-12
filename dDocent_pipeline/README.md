@@ -7,7 +7,7 @@ Here is possible to find the bioinformatic steps for assembly and ddRAD loci fil
 
 #Filter initial Variant Calls
 
-1-	Start with raw vcf file and change all genotypes with less than 5 reads to missing data
+1. Start with raw vcf file and change all genotypes with less than 5 reads to missing data
 This inital calls can be found here
 The file needs to be unzipped before starting this workflow.
 
@@ -29,23 +29,24 @@ vcftools --vcf TotalRawSNPs.vcf --recode-INFO-all --minDP 5 --out BSdp5 --recode
 > After filtering, kept 56004 out of a possible 56004 Sites
 > Run Time = 49.00 seconds
 
-•	Now filter out all variants that are present below a minor allele frequency of 1% and are not called in at least 50% of samples
+2. Now filter out all variants that are present below a minor allele frequency of 1% and are not called in at least 50% of samples
+```sh
 vcftools --vcf BSdp5.recode.vcf --recode-INFO-all --maf 0.01 -–max-missing 0.5 --out BSdp5g5 –recode
+```
+> (C) Adam Auton and Anthony Marcketta 2009
+> Parameters as interpreted:
+>        --vcf BSdp5.recode.vcf
+>        --recode-INFO-all
+>        --maf 0.01
+>        --max-missing 0.5
+>        --out BSdp5g5
+>        --recode
+>After filtering, kept 210 out of 210 Individuals
+>Outputting VCF file...
+>After filtering, kept 27863 out of a possible 56004 Sites
+>Run Time = 26.00 seconds
 
-(C) Adam Auton and Anthony Marcketta 2009
-Parameters as interpreted:
-        --vcf BSdp5.recode.vcf
-        --recode-INFO-all
-        --maf 0.01
-        --max-missing 0.5
-        --out BSdp5g5
-        --recode
-After filtering, kept 210 out of 210 Individuals
-Outputting VCF file...
-After filtering, kept 27863 out of a possible 56004 Sites
-Run Time = 26.00 seconds
-
-•	Now use a custom script called filter_missing_ind.sh to filter out bad individuals (there were a lot in this data set).
+3. Now use a custom script called filter_missing_ind.sh to filter out bad individuals (there were a lot in this data set).
 bash filter_missing_ind.sh BSdp5g5.recode.vcf BSdp5MI
 At the prompt, enter yes and a custom cutoff of 0.85
 yes
