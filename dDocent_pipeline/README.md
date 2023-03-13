@@ -186,32 +186,43 @@ vcftools --vcf BSdp5MIp25.recode.vcf --recode-INFO-all --maf 0.01 --max-missing 
 ```
 Below is the included output:
 > This script will automatically filter a FreeBayes generated VCF file using criteria related to site depth, quality versus depth, strand representation, allelic balance at heterzygous individuals, and paired read representation.
+> 
 > The script assumes that loci and individuals with low call rates (or depth) have already been removed.
-> Contact Jon Puritz (jpuritz@gmail.com) for questions and see script comments for more details on particular filters
-> Number of sites filtered based on allele balance at heterozygous loci, locus quality, and mapping quality / Depth
-> 2535 of 22660
-> Number of additional sites filtered based on overlapping forward and reverse reads
-> 1855 of 20125
-> Is this from a mixture of SE and PE libraries? Enter yes or no.
-`no`
-> Number of additional sites filtered based on properly paired status
-> 211 of 18270
-> Number of sites filtered based on high depth and lower than 2*DEPTH quality score
-> 976 of 18059
+> Contact Jon Puritz (jpuritz@gmail.com) for questions and see script comments for more details on particular filters.
+> 
+> Number of sites filtered based on allele balance at heterozygous loci, locus quality, and mapping quality / Depth:
+> 2535 of 22660.
+> 
+> Number of additional sites filtered based on overlapping forward and reverse reads:
+> 1855 of 20125.
+> 
+> Is this from a mixture of SE and PE libraries? Enter yes or no:
+>`no`.
+
+> Number of additional sites filtered based on properly paired status:
+> 211 of 18270.
+> 
+> Number of sites filtered based on high depth and lower than 2*DEPTH quality score:
+> 976 of 18059.
 
                                             Adjusted Histogram of mean depth per site
   ![image](https://user-images.githubusercontent.com/51339439/224539627-187e3e94-5c80-412e-9153-edc5212733f0.png)
 
-> If distrubtion looks normal, a 1.645 sigma cutoff (~90% of the data) would be 310348.2065
-> The 95% cutoff would be 1255
-> Would you like to use a different maximum mean depth cutoff than 1255, yes or no
-`no`
-> Number of sites filtered based on maximum mean depth
- > 975 of 18059
-> Total number of sites filtered
-> 5578 of 22660
-> Remaining sites
+> If distrubtion looks normal, a 1.645 sigma cutoff (~90% of the data) would be 310348.2065.
+> 
+> The 95% cutoff would be 1255.
+> 
+> Would you like to use a different maximum mean depth cutoff than 1255, yes or no:
+>`no`.
+> Number of sites filtered based on maximum mean depth:
+> 975 of 18059.
+> 
+> Total number of sites filtered:
+> 5578 of 22660.
+> 
+> Remaining sites:
 > 17082
+> 
 > Filtered VCF file is called Output_prefix.FIL.recode.vcf
 > Filter stats stored in BSdp5MIp25g9.filterstats
 
