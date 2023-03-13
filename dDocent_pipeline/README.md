@@ -198,7 +198,7 @@ Below is the included output:
 > 
 > Is this from a mixture of SE and PE libraries? Enter yes or no:
 >`no`.
-
+>
 > Number of additional sites filtered based on properly paired status:
 > 211 of 18270.
 > 
