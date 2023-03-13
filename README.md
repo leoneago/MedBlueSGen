@@ -4,9 +4,12 @@ This is the repository for all the codes used for the EU-JRC funded [MedBlueSGen
 
 An interactive sampling map is available [here](https://fishreg.jrc.ec.europa.eu/web/medbluesgen/sampling-data)
 
+After optimized assembly and SNPs calling, the dataset has been filtered using many criteria.
+
 [dDocent](https://www.ddocent.com/) steps and filtering can be found [here](https://github.com/leoneago/MedBlueSGen/tree/main/dDocent_pipeline) 
 
  Post dDocent steps and Population Genetics analysis with [R](https://www.r-project.org/) can be found [here](https://github.com/leoneago/MedBlueSGen/blob/main/R/MedBlueSGen_Rmarkdown.Rmd)
+ 
 
 ![shark](https://user-images.githubusercontent.com/51339439/162580700-63a773e1-d047-4efd-a07c-263bc4d4db96.jpg)
 ###### Photo: Nuno Sa/Nature Picture Library/Corbis
