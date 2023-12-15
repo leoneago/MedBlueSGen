@@ -1,21 +1,23 @@
 ---
-title: "MedBluesGen_Rmarkdown"
+title: "MedBlueSGen_Rmarkdown_Evol_Appl"
 author: "Agostino Leone"
-date: "22/1/2022"
-output: 
-  html_document:
-    code_folding: "show"
+date: "2023-12-14"
+output: html_document
+code_folding: "show"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)  # comment
 ```
 
+If you want to knitr this markdown use:
+knittr::ops_chunk$set(echo = TRUE)
+
 ### scripts for post dDocent pipeline analysis of the MedBlueSGen project: a population genetic study on Mediterranean/North East Atlantic  blue shark, _Prionace glauca_, for stock identification and conservation <https://fishreg.jrc.ec.europa.eu/web/medbluesgen>
 
 __If using this Rmarkdown as a source of scripts/inspiration, please consider to cite the original paper:__
 
-> ### Population genomics of the blue shark, *Prionace glauca*, reveals different stock units and discrete populations in the Mediterranean Sea and the North East Atlantic **In Review**. 
+> ### Population genomics of the blue shark, _Prionace glauca_, reveals different populations in the Mediterranean Sea and the North East Atlantic **Evol. Appl. In review **. 
 
 
 ### Sampling Design
@@ -34,14 +36,18 @@ library(sp)
 library(mapplots)
 library(maptools)
 library(rgdal)
+library(raster)
 library(RgoogleMaps)
 library(ggOceanMaps)
 library(RgoogleMaps)
 library(dplyr)
+library(marmap)
+library(fossil)
 
-#load the csv with all samples organized in a file called blu.csv
+#load the csv file blu.csv with all specimen coordinates
 
 dataset <-read.csv(file = "blu.csv", sep = ",")
+
 NATL <- dataset %>% filter(
   area %in% c("NATL" )
 )
@@ -64,6 +70,7 @@ attach(NATL)
 attach(EATL)
 attach(WMED)
 attach(EMED)
+#attach(EMED_O)
 
 dt <- data.frame(lon = c(-20, -20, 30, 30), lat = c(30, 52, 30, 52))
 
@@ -73,10 +80,20 @@ basemap(data = dt, bathymetry = TRUE) + annotation_scale(location = "br") +
   geom_point(data = EATL, mapping = aes(x = lon, y = lat), color = "red") +
   geom_point(data = WMED, mapping = aes(x = lon, y = lat), color = "purple") +
   geom_point(data = EMED, mapping = aes(x = lon, y = lat), color = "blue")
+
 ```
+To remove labels
+```{r map}
+basemap(data = dt, bathymetry = TRUE) + annotation_scale(location = "br") + 
+    annotation_north_arrow(location = "tr", which_north = "true") + 
+    geom_point(data = NATL, mapping = aes(x = lon, y = lat), color = "green") + 
+    geom_point(data = EATL, mapping = aes(x = lon, y = lat), color = "red") +
+    geom_point(data = WMED, mapping = aes(x = lon, y = lat), color = "purple") +
+    geom_point(data = EMED, mapping = aes(x = lon, y = lat), color = "blue") +
+    labs(x = NULL, y = NULL)
+``` 
 
 ### Population Genetics
-
 
 ## Import genotype input file into genind object
 # first activate needed packages
@@ -97,6 +114,7 @@ library(radiator)
 library(assigner)
 library(strataG)
 library(stockR)
+library(genepop)
 library(dartR)
 library(hierfstat)
 library(pcadapt)
@@ -117,9 +135,11 @@ library(brew)
 library(RColorBrewer)
 library(scales)
 library(dplyr)
+library(LEA)
+library(gtools)
 ```
 
-# Import dataset and cleaning (Most of the filtering has been done following a modified tutorial by Dr. Jon Puritz )
+# Import dataset and cleaning (Most of the filtering has been done in the server following a modified tutorial by Dr. Jon Puritz )
 ```{r import}
 neutrals <- import2genind("neutralloci.gen")
 ```
@@ -131,6 +151,8 @@ neutrals <- import2genind("neutralloci.gen")
 popNames(neutrals) = gsub("[^a-zA-Z]", "", popNames(neutrals))
 popNames(neutrals)
 
+coord<-read.table("coord.txt", header=TRUE, sep="\t")
+neutrals@other$xy<-coord
 #filter per NA
 loci<-missingno(neutrals, type = "loci", cutoff = 0.10, quiet = FALSE,
           freq = FALSE)
@@ -184,6 +206,7 @@ FstWC84 <-  gl.fst.pop(neuro, nboots = 10000, percent = 95)
 FstWC84$Fsts
 FstWC84$Pvalues
 
+
 result <- diveRsity::basicStats(
   infile = "neutralloci.gen",
   outfile = "BasicStat_neutro", fis_ci = TRUE, ar_ci = TRUE,
@@ -218,6 +241,7 @@ barplot(percent, ylab = "% variance explained by eigenvectors", names.arg = roun
 ```
 #Create the plot
 ```{r PCA plot}
+#this PCA script was inspired to Jenkins et al. 2019
 # Create a data.frame containing individual coordinates
 ind_coords = as.data.frame(pca1$li)
 # Rename columns of dataframe and add column with individuals
@@ -235,7 +259,7 @@ ind_coords = left_join(ind_coords, centroid, by = "Site", suffix = c("",".cen"))
 
 # Define colour palette
 cols = brewer.pal(nPop(neutrals), "Set1")
-
+# in case of reordered genepop cols = c("#4DAF4A", "#E41A1C", "#984EA3", "#377EB8")
 # Custom x and y labels
 xlab = paste("PC1 (", format(round(percent[1], 1), nsmall=1)," %)", sep="")
 ylab = paste("PC2 (", format(round(percent[2], 1), nsmall=1)," %)", sep="")
@@ -343,7 +367,7 @@ ggplot(data = ind_coords, aes(x = PC1, y = PC2))+
 
 #DAPC
 #Perform a DAPC (discriminant analysis of principal components) on the blueshark dataset.
-Before that, let's copute the optimal number of PC to retain for the analysis
+Before that, let's compute the optimal number of PCs to retain for the analysis
 ```{r cross.validation for DAPC}
 # Perform cross validation to find the optimal number of PCs to retain in DAPC
 set.seed(123)
@@ -415,56 +439,180 @@ ggplot(data = ind_coords, aes(x = Axis1, y = Axis2))+
 # ggsave("Figure3.png", width = 12, height = 8, dpi = 600)
 ```
 
-# Let's redo the DAPC searching for different number of clusters (K)
-```{r find.clusters}
-set.seed(124)
-grpneut <-
-adegenet::find.clusters(
-neutrals,
-max.n.clust = 6,
-n.pca = adegenet::nInd(neutrals) / 3,
-stat = "BIC",
-parallel = TRUE,
-n.cores = parallel::detectCores() - 2
+#We can also do a compoplot based on dapc1
+```{r compoplot DAPC}
+# tiff("compoplot.tiff", units="mm", width=180, height=90, res=600)
+compoplot(dapc1, txt.leg=paste("Cluster", 1:4), lab="",
+          xlab="individuals", col=cols)
+# dev.off()
+```
+
+To see the contribution of SNPs on differentiation, we can have a look at the loading plot
+```{r Loading plot DAPC}
+contrib <- loadingplot(dapc1$var.contr, axis = 2, thres = 0.0005, lab.jitter = 1)
+contrib
+```
+
+
+#Looking at the Fst values, it's seems that the differentiation is related to the distance. Let's test for Isolation by Distance (IBD)
+
+Let's try to use marmap package to extrapolate some spatial info of the study area
+```{r marmap_spatial_data}
+papoue <- getNOAA.bathy(lon1 = -21, lon2 = 41,
+lat1 = 25, lat2 = 55, resolution = 4, keep = FALSE)
+
+# Creating color palettes
+blues <- c("lightsteelblue4", "lightsteelblue3",
+"lightsteelblue2", "lightsteelblue1")
+greys <- c(grey(0.6), grey(0.93), grey(0.99))
+
+plot(papoue, image = TRUE, land = TRUE, lwd = 0.03,
+bpal = list(c(0, max(papoue), greys),
+c(min(papoue), 0, blues)))
+# Add coastline
+plot(papoue, n = 1, lwd = 0.4, add = TRUE)
+
+#you can explore different bathtymetry
+bathyal <- get.area(papoue, level.inf = -4000, level.sup = -1000)
+abyssal <- get.area(papoue, level.inf = min(papoue),
+level.sup = -4000)
+twilight <- get.area(papoue, level.inf = -1000, level.sup = -200)
+ba <- round(bathyal$Square.Km, 0)
+ab <- round(abyssal$Square.Km, 0)
+tw <- round(twilight$Square.Km, 0)
+
+
+plot(papoue, lwd = 0.2)
+col.bath <- rgb(0.7, 0, 0, 0.3)
+col.abys <- rgb(0.7, 0.7, 0.3, 0.3)
+col.twil <- rgb(0.7, 0.8, 0.4, 0.3)
+plotArea(bathyal, col = col.bath)
+plotArea(abyssal, col = col.abys)
+plotArea(twilight, col = col.twil)
+
+
+legend(x="bottomleft",
+legend=c(paste("bathyal:",ba,"km2"),
+paste("abyssal:",ab,"km2"),
+paste("twilight:",tw,"km2")),
+col="black", pch=21,
+pt.bg=c(col.bath,col.abys))
+
+#you can load coordinates into the genind object for each specimen and then a transition object to be used by lc.dist to compute least cost distances between locations or just use specific location, as in this case.
+
+#sites <- neutrals$other$xy
+
+trans1 <- trans.mat(papoue)
+trans2 <- trans.mat(papoue, min.depth = -50)
+
+
+#IBD_per_pop_
+sites<-read.table("coord_ibd.txt", header=TRUE, sep="\t")
+#The coordinates are choosen in order to represent the 4 main areas CELT, EATL, WMED, EMED
+#x	y
+#-15.84149	35.36358
+#14.76494	43.23800
+#-6.490749	51.283256
+#8.012010	40.477197
+
+out1 <- lc.dist(trans1, sites, res = "path")
+out2 <- lc.dist(trans2, sites, res = "path")
+
+
+plot(papoue, xlim = c(-20, 40), ylim = c(25, 55),
+     deep = c(-5000, -200, 0), shallow = c(-200, 0, 0),
+     col = c("grey", "blue", "black"), step = c(1000, 200, 1), lty = c(1, 1, 1), lwd = c(0.6, 0.6, 1.2),
+     draw = c(FALSE, FALSE, FALSE))
+points(sites, pch = 21, col = "blue", bg = col2alpha("blue", .9),
+       cex = 1.2)
+text(sites[,1], sites[,2], lab = rownames(sites),
+     pos = c(3, 4, 1, 2), col = "blue")
+lapply(out1, lines, col = "orange", lwd = 5, lty = 1) -> dummy
+lapply(out2, lines, col = "black", lwd = 1, lty = 1) -> dummy
+
+#We can make a cleaned map
+
+
+plot(papoue, xlim = c(-20, 40), ylim = c(25, 55), land = TRUE,
+deep = c(-5000, -200, 0), shallow = c(-200, 0, 0),
+col = c("grey", "blue", "black"), step = c(1000, 200, 1), lty = c(0, 0, 1), lwd = c(0.6, 0.6, 1.2),
+draw = c(FALSE, FALSE, FALSE))
+points(sites, pch = 21, col = "blue", bg = col2alpha("blue", .9),
+cex = 1.2)
+text(sites[,1], sites[,2], lab = rownames(sites),
+pos = c(1, 1, 1, 1), col = "blue")
+lapply(out1, lines, col = "orange", lwd = 5, lty = 1) -> dummy
+
+#Then let's estimate the least cost distances
+library(fossil)
+dist0 <- round(earth.dist(sites), 0)
+dist1 <- lc.dist(trans1, sites, res = "dist")
+dist2 <- lc.dist(trans2, sites, res = "dist")
+
+dist0
+dist1
+dist2
+
+```
+
+```{r Isolation by Distance}
+
+Dgeo <-read.table("DGEO_PROVA.txt", header=TRUE, sep="\t")
+Dgeo <- as.dist(Dgeo)
+Dgeo
+
+
+Dgen <-read.table("DGEN_PROVA.txt", header=TRUE, sep="\t")
+Dgen <- as.dist(Dgen)
+Dgen
+
+
+
+isolation_by_distance <- gl.ibd(
+    distance = "Fst",
+    coordinates = "xy",
+    Dgen = Dgen,
+    Dgeo = Dgeo,
+    permutations = 20000,
+    plot.out = TRUE,
+    paircols = TRUE,
+    save2tmp = FALSE,
+    verbose = NULL
 )
 
-PCneut <- as.numeric(numPCs)
-
-dapc.all.neutral.object.names <- c()
-for (K in 2:5) {
-    set.seed(124)
-    grp <- adegenet::find.clusters(neutrals, n.clust = K, n.pca = PCneut)
-    set.seed(124)
-    dapc.all.neutral <- adegenet::dapc(neutrals, grp$grp, n.da = K - 1,
-                                       n.pca = PCneut)
-    assign(paste0("dapc.all.neutral", K),value = dapc.all.neutral)
-    dapc.all.neutral.object.names <- c(dapc.all.neutral.object.names,
-                                       paste0("dapc.all.neutral", K))
-}
 ```
 
-```{r DAPC 2-5 K}
-for(K in 2:5) {
-    dapc.neutral <- get(dapc.all.neutral.object.names[K - 1])
-    if (K == 2){
-        posi.leg <- "bottomright"
-    } else {posi.leg <- "bottomleft"}
-
-dapc.neutral.plot<-ade4::scatter(dapc.neutral, grp = pop(neutrals), cex = 2, legend = TRUE, col = cols, clabel = FALSE, posi.leg = posi.leg, scree.pca = TRUE, posi.pca = "topleft", cleg = 0.75, xax = 1, yax = 2)
-}
-```
-#Then we can calculate the relative migration rate with
+#Then we can try to estimate the relative migration rate
 ```{r mig rate}
-prova <- divMigrate(infile = "neutralloci.gen", outfile = "relmigrate", boots = 10000, stat = "all",  filter_threshold = 0, plot_network = TRUE,  plot_col = "darkblue", para = 2)
+RelMigRate <- divMigrate(infile = "neutralloci.gen", outfile = "relmigrate", boots = 10000, stat = "all",  filter_threshold = 0, plot_network = TRUE,  plot_col = "darkblue", para = 2)
 ```
+#estimate migration rate using the private allele methods
+```{r private allele}
+Nm_private(
+    inputFile = "~/neutralloci.gen",
+    outputFile = "privAll",
+    dataType = "Diploid",
+    verbose = interactive()
+)
+```
+#and then let's see these private alleles
+```{r private allele}
+poppr::private_alleles(neutrals, alleles ~ strata)
+poppr::private_alleles(neutrals, alleles ~ strata, count.alleles = TRUE)
+Pinfpriv <- poppr::private_alleles(neutrals, report = "data.frame")
+ggplot(Pinfpriv) + geom_tile(aes(x = population, y = allele, fill = count))
+```
+
 
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
 
-```{r }
 
-```
+__If using this Rmarkdown as a source of scripts/inspiration, please consider to cite the original paper:__
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+> ### Population genomics of the blue shark, _Prionace glauca_, reveals different populations in the Mediterranean Sea and the North East Atlantic **Evol. Appl. In review **. 
+
+
+Agostino Leone
