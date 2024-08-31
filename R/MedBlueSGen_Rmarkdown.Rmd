@@ -17,7 +17,7 @@ knittr::ops_chunk$set(echo = TRUE)
 
 __If using this Rmarkdown as a source of scripts/inspiration, please consider to cite the original paper:__
 
-> ### Population genomics of the blue shark, _Prionace glauca_, reveals different populations in the Mediterranean Sea and the North East Atlantic **Evol. Appl. In review **. 
+> ### Population genomics of the blue shark, _Prionace glauca_, reveals different populations in the Mediterranean Sea and the North East Atlantic **Evol. Appl. ISSUE **. 
 
 
 ### Sampling Design
