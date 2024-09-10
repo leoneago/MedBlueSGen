@@ -10,11 +10,5 @@ After optimized assembly and SNPs calling, the dataset has been filtered using m
 
  The Rmarkdown file with post dDocent steps and Population Genetics analysis can be found [here](https://github.com/leoneago/MedBlueSGen/blob/main/R/MedBlueSGen_Rmarkdown.Rmd)
  
-
-![shark](https://user-images.githubusercontent.com/51339439/162580700-63a773e1-d047-4efd-a07c-263bc4d4db96.jpg)
-###### Photo: Nuno Sa/Nature Picture Library/Corbis
-
-oppure
-
 ![Tiburón_azul_(Prionace_glauca),_canal_Fayal-Pico,_islas_Azores,_Portugal,_2020-07-27,_DD_31_cropped](https://github.com/user-attachments/assets/03536af0-af45-46e3-a0fe-b106049175d7)
 ###### Photo By Diego Delso, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=108259682
