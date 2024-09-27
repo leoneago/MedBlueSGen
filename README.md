@@ -2,7 +2,7 @@
 ### A population genetic study on Mediterranean blue shark for stock identification and conservation
 This is the repository for all the codes used for the EU-JRC funded [MedBlueSGen](https://sustainable-fisheries.ec.europa.eu/fisheries-genetics/projects-fisheries-genetics/medbluesgen_en) project and from the paper by Leone et al., 2023:
 
-"#####**Leone, A., Arnaud-Haond, S., Babbucci, M., Bargelloni, L., Coscia, I., Damalas, D., Delord, C., Franch, R., Garibaldi, F., Macias, D., Mariani, S., Martinsohn, J., Megalofonou, P., Micarelli, P., Nikolic, N., Prodöhl, P.A., Sperone, E., Stagioni, M., Zanzi, A., Cariani, A., Tinti, F. (2024). Population genomics of the blue shark, *Prionace glauca*, reveals different populations in the Mediterranean Sea and the North East Atlantic. *Evolutionary Applications*, 17(9): e70005. doi: [https://doi.org/10.1111/eva.70005](https://doi.org/10.1111/eva.70005)** 
+##### Leone, A., Arnaud-Haond, S., Babbucci, M., Bargelloni, L., Coscia, I., Damalas, D., Delord, C., Franch, R., Garibaldi, F., Macias, D., Mariani, S., Martinsohn, J., Megalofonou, P., Micarelli, P., Nikolic, N., Prodöhl, P.A., Sperone, E., Stagioni, M., Zanzi, A., Cariani, A., Tinti, F. (2024). Population genomics of the blue shark, *Prionace glauca*, reveals different populations in the Mediterranean Sea and the North East Atlantic. *Evolutionary Applications*, 17(9): e70005. doi: [https://doi.org/10.1111/eva.70005](https://doi.org/10.1111/eva.70005) 
 
 An interactive sampling map is available [here](https://sustainable-fisheries.ec.europa.eu/fisheries-genetics/projects-fisheries-genetics/medbluesgen/dataset_en)
 
